@@ -36,3 +36,7 @@ jobs:
           
           # sftp args
           args: '-o ConnectTimeout=5'
+      - name: npm install & build
+        run:
+           npm install
+           npm run build
