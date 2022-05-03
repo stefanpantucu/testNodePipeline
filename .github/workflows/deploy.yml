@@ -1,43 +1,38 @@
-name: CI-SFTP
- 
-# Controls when the action will run. 
+name: Node.js CI
+
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [ master ]
-#  pull_request:
-#    branches: [ main ]
- 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
- 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+  pull_request:
+    branches: [ master ]
+
 jobs:
-  # This workflow contains a single job called "SFTP"
-  deploy-via-sftp:
+  build:
+
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-          
-      - name: SFTP Deploy
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.1
-        with:
-          username: stefanpantucu
-          password:  ${{secrets.PASSWORD}}
-          server: testcicd2.lsacbucuresti.ro
-          port: 22 # default is 22
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
- 
-          
-          # will put all file under this path
-          local_path: ./index.js # default is ./*
-          # files will copy to under remote_path
-          remote_path: /var/www/html/testcicd2
-          
-          # sftp args
-          args: '-o ConnectTimeout=5'
-      - name: npm install & build
-        run:
-           npm install
-           npm run build
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm run build --if-present
+    # - run: npm run test:staging
+    - name: SSH Remote Commands
+      uses: appleboy/ssh-action@v0.1.2
+      with:
+        key: ${{secrets.SSH_PRIVATE_KEY}} # key generated on the server
+        host: ${{secrets.HOST}}
+        username: ${{secrets.USERNAME}}
+        script: |
+          pm2 delete all
+          cd /var/www/html/testcicd2
+          git pull
+          npm install
+          pm2 start npm -- start
