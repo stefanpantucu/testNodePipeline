@@ -31,5 +31,5 @@ app.use(function(req, res, next) {
 });
 
 app.get("/", (req, res) => {
-	res.send("Hello World 2!");
+	res.send("Hello World Exploit!");
 })
