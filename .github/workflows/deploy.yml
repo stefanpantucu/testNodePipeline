@@ -30,11 +30,12 @@ jobs:
         key: ${{secrets.SSH_PRIVATE_KEY}} # key generated on the server
         host: ${{secrets.HOST}}
         username: ${{secrets.USERNAME}}
+        # || true needed because pm2 delete returns 1 when no process is running
         script: |
-          pm2 delete all
+          pm2 delete all || true
           cd /var/www/html/testcicd2
           git pull origin master
           npm install
           pm2 start npm -- start
-
+    
         script_stop: true
