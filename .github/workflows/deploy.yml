@@ -33,7 +33,7 @@ jobs:
         script: |
           pm2 delete all
           cd /var/www/html/testcicd2
-          git pull
+          git pull origin master
           npm install
           pm2 start npm -- start
 
