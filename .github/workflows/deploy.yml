@@ -36,3 +36,5 @@ jobs:
           git pull
           npm install
           pm2 start npm -- start
+
+        script_stop: true
